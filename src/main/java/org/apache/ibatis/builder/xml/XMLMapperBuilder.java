@@ -107,12 +107,15 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void configurationElement(XNode context) {
     try {
+      //拿到命名空间
       String namespace = context.getStringAttribute("namespace");
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
+      //解析缓存引用
       cacheRefElement(context.evalNode("cache-ref"));
+      //解析二级缓存cache
       cacheElement(context.evalNode("cache"));
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
       resultMapElements(context.evalNodes("/mapper/resultMap"));
@@ -200,8 +203,10 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void cacheElement(XNode context) {
     if (context != null) {
+      //cache属性没有设置，会有默认的值，PerpetualCache是Cache的实现
       String type = context.getStringAttribute("type", "PERPETUAL");
       Class<? extends Cache> typeClass = typeAliasRegistry.resolveAlias(type);
+      //溢出的回收机制，把用的最少，移除掉。LRU LruCache类 CacheBuilder
       String eviction = context.getStringAttribute("eviction", "LRU");
       Class<? extends Cache> evictionClass = typeAliasRegistry.resolveAlias(eviction);
       Long flushInterval = context.getLongAttribute("flushInterval");

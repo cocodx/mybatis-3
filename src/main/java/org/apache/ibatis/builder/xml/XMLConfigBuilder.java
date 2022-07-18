@@ -105,8 +105,12 @@ public class XMLConfigBuilder extends BaseBuilder {
       propertiesElement(root.evalNode("properties"));
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
+      /**
+       * 指定mybatis的log默认实现，未设置自动查找
+       */
       loadCustomLogImpl(settings);
       typeAliasesElement(root.evalNode("typeAliases"));
+      //解析plugins
       pluginElement(root.evalNode("plugins"));
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
@@ -185,6 +189,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       for (XNode child : parent.getChildren()) {
         String interceptor = child.getStringAttribute("interceptor");
         Properties properties = child.getChildrenAsProperties();
+        //一个plugin解析成一个Interceptor，责任链
         Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).getDeclaredConstructor().newInstance();
         interceptorInstance.setProperties(properties);
         configuration.addInterceptor(interceptorInstance);
